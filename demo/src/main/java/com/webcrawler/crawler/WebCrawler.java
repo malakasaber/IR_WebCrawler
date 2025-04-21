@@ -56,5 +56,68 @@ public class WebCrawler {
         System.out.println("\n Done! Total visited: " + visited.size());
     }
 
+    //getter to get the pageTexts to tokenize it
+    public static Map<String, String> getPageTexts() {
+        return this.page_texts;
+    }
+
+    //this function is supposed to take the pageTexts to tokenize it
+    public static Map<String, List<String>> tokenization(Map<String, String> pageTexts) {
+        //declaring the output variable
+        Map<String, List<String>> tokenedUrls = new HashMap<>();
+
+        //looping over each url and its texts
+        for (Map.Entry<String, String> entry : pageTexts.entrySet()) {
+            //getting the url name and the text in variables
+            String key = entry.getKey();
+            String value = entry.getValue();
+            //storing the tokenized text in a list after using the tokenization function on the text
+            List<String> TokensList = Tokenize(value);
+            //adding the (url and tokenized-list) to the output variable
+            tokenedUrls.put(key, TokensList);
+        }
+        return tokenedUrls;
+    }
+
+    public static List<String> Tokenize(String text) {
+        //declaring a list of tokens for the output
+        List<String> tokens = new ArrayList<>();
+
+        //if the list is empty return an empty list
+        if (text == null || text.isEmpty()) return tokens;
+
+        //removing all punctuation from the text and replacing them with space
+        String noPunctiuation = text.replaceAll("\\p{Punct}", " ");
+
+        //adding each word in a list splited by spaces
+        String[] words = noPunctiuation.split("\\s+");
+
+        //looping over the list of words to change each char to lowercase
+        for (String word : words) {
+            String trimmed = word.trim().toLowerCase();
+            if (!trimmed.isEmpty()) {
+
+                //adding the word after tokenization to the output variable
+                tokens.add(trimmed);
+            }
+        }
+        return tokens;
+    }
+
+    //function to test the tokenization output (for testing)
+    public static void printTokens(Map<String, List<String>> tokenizedUrls) {
+
+        for (Map.Entry<String, List<String>> entry : tokenizedUrls.entrySet()) {
+            String key = entry.getKey();
+            List<String> value = entry.getValue();
+
+            System.out.print(key + " Tokens:");
+            for (String token : value) {
+                System.out.print(token + " ");
+            }
+            System.out.println();
+
+        }
+    }
 }
 
