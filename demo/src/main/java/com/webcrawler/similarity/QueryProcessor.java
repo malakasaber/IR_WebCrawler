@@ -1,5 +1,46 @@
 package com.webcrawler.similarity;
 
+import com.webcrawler.index.InvertedIndex;
+import com.webcrawler.index.Document;
+import com.webcrawler.crawler.WebCrawler;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class QueryProcessor {
-    
+    private final InvertedIndex index;
+    private final TFIDFCalculator tfidfCalculator;
+    private final CosineSimilarity cosineSimilarity;
+
+    public QueryProcessor(InvertedIndex index) {
+        this.index = index;
+        this.tfidfCalculator = new TFIDFCalculator(index);
+        this.cosineSimilarity = new CosineSimilarity();
+    }
+
+    public List<Document> processQuery(String query) {
+        // tokenize
+        List<String> queryTerms = WebCrawler.Tokenize(query); 
+        
+        // convert to array for TF-IDF calculation
+        String[] termsArray = queryTerms.toArray(new String[0]);
+        Map<String, Double> queryVector = tfidfCalculator.calculateQueryVector(termsArray);
+
+        // for docs scores
+        Map<Document, Double> documentScores = new HashMap<>();
+        
+        // for every doc in crawled docs, get its cosine sim with the given query and add it to hashmap of scores
+        for (Document doc : index.getAllDocuments()) {
+            Map<String, Double> docVector = tfidfCalculator.calculateDocumentVector(doc);
+            double score = cosineSimilarity.calculate(queryVector, docVector);
+            documentScores.put(doc, score);
+        }
+        
+        // Rank docs by score and get top n docs
+        return documentScores.entrySet().stream()
+                .sorted(Map.Entry.<Document, Double>comparingByValue().reversed()) //rank
+                .limit(10) //get top n
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList()); //output
+    }
 }

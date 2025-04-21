@@ -1,4 +1,5 @@
-package com.webcrawlerimport org.jsoup.Jsoup;
+package com.webcrawler.crawler;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -13,7 +14,7 @@ public class WebCrawler {
     private static final int max_pages = 10;
 
     //function crawing
-    public void start_crawling(String[] seeds){
+    public List<Document> start_crawling(String[] seeds){
 
         //add URLS in queue
         queue_waiting.addAll(Arrays.asList(seeds));
@@ -53,11 +54,18 @@ public class WebCrawler {
 
         }
 
+        // Convert map to List of documents to return in main
+        List<Document> documents = new ArrayList<>();
+        for (Map.Entry<String, String> entry : page_texts.entrySet()) {
+            documents.add(new Document(entry.getKey(), entry.getValue()));
+        }
+
         System.out.println("\n Done! Total visited: " + visited.size());
+        return documents;
     }
 
     //getter to get the pageTexts to tokenize it
-    public static Map<String, String> getPageTexts() {
+    public Map<String, String> getPageTexts() {
         return this.page_texts;
     }
 
@@ -116,8 +124,6 @@ public class WebCrawler {
                 System.out.print(token + " ");
             }
             System.out.println();
-
         }
     }
 }
-
