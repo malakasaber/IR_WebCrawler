@@ -18,16 +18,15 @@ A Java application that crawls Wikipedia pages, builds an inverted index, and ra
 - Maven 3.6.0 or higher
 
 ## <span style="font-size:28px">Project Structure</span>
-src/main/java/com/webcrawler/
-├── crawler/          # Web crawling components
-│   ├── WebCrawler.java
-│   └── CrawlerConfig.java
-├── index/            # Inverted index implementation
-│   ├── InvertedIndex.java
-│   ├── Posting.java
-│   └── Document.java
-├── similarity/       # TF-IDF and similarity calculations
-│   ├── TFIDFCalculator.java
-│   ├── CosineSimilarity.java
-│   └── QueryProcessor.java
-└── Main.java         # Application entry point
+├── crawler/ # Web crawling components
+│ ├── WebCrawler.java
+│ └── CrawlerConfig.java
+├── index/ # Inverted index implementation
+│ ├── InvertedIndex.java
+│ ├── Posting.java
+│ └── Document.java
+├── similarity/ # TF-IDF and similarity calculations
+│ ├── TFIDFCalculator.java
+│ ├── CosineSimilarity.java
+│ └── QueryProcessor.java
+└── Main.java # Application entry point
