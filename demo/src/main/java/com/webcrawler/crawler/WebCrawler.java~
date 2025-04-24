@@ -1,11 +1,9 @@
 package com.webcrawler.crawler;
-
 import com.webcrawler.index.IndexDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -16,42 +14,45 @@ public class WebCrawler {
     private Map<String, String> page_texts = new HashMap<>();
     private static final int max_pages = 10;
 
-    // Function crawling
-    public List<Document> start_crawling(String[] seeds) {
+    //function crawing
+    public List<Document> start_crawling(String[] seeds){
 
-        // Add URLs to queue
+        //add URLS in queue
         queue_waiting.addAll(Arrays.asList(seeds));
 
-        while (!queue_waiting.isEmpty() && visited.size() < max_pages) {
-            // Get next URL from queue
-            String current_url = normalizeUrl(queue_waiting.poll());
+        while (!queue_waiting.isEmpty() && visited.size() < max_pages){
+            //get next url from queue
+            String current_url = queue_waiting.poll();
 
-            // To avoid duplicates & ensure it's a Wikipedia link
-            if (current_url == null || visited.contains(current_url)) continue;
-            if (!current_url.startsWith("https://en.wikipedia.org/wiki/")) continue;
+            //to avoid duplicated & ensure it wikipedia link
+            if (visited.contains(current_url)) continue;
+            if(!current_url.startsWith("https://en.wikipedia.org/wiki/")) continue;
 
             try {
-                // Fetch the HTML document
+                //fetch the html document
                 Document document = Jsoup.connect(current_url).get();
                 visited.add(current_url);
 
-                // Save text content for tokenization
+                //save texts content for task 2
                 page_texts.put(current_url, document.body().text());
 
                 System.out.println("✅ VISITED: " + current_url);
 
-                // Get all links on the current page
-                Elements links_page = document.select("a[href]");
-                for (Element link : links_page) {
-                    String Url = normalizeUrl(link.attr("abs:href"));
 
-                    if (Url != null && !visited.contains(Url) && Url.startsWith("https://en.wikipedia.org/wiki/")) {
+                //get all links on the current page
+                Elements links_page = document.select("a[href]");
+                for(Element link : links_page) {
+                    //get url for each link to add it in queue
+                    String Url = link.attr("abs:href");
+
+                    if (!visited.contains(Url) && Url.startsWith("https://en.wikipedia.org/wiki/")) {
                         queue_waiting.add(Url);
                     }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
         }
 
         // Convert map to List of documents to return in main
@@ -60,68 +61,60 @@ public class WebCrawler {
             documents.add(new Document(entry.getKey(), entry.getValue()));
         }
 
-        System.out.println("\nDone! Total visited: " + visited.size());
+        System.out.println("\n Done! Total visited: " + visited.size());
         return documents;
     }
 
-    // Normalize URL to avoid duplicate visits
-    private String normalizeUrl(String url) {
-        if (url == null) return null;
-
-        // Remove fragment (e.g., #section)
-        int hashIndex = url.indexOf('#');
-        if (hashIndex != -1) {
-            url = url.substring(0, hashIndex);
-        }
-
-        // Remove trailing slash
-        if (url.endsWith("/")) {
-            url = url.substring(0, url.length() - 1);
-        }
-
-        return url;
-    }
-
-    // Getter for the page texts to tokenize them
+    //getter to get the pageTexts to tokenize it
     public Map<String, String> getPageTexts() {
         return this.page_texts;
     }
 
-    // Tokenize page texts into a list of IndexDocuments
+    //this function is supposed to take the pageTexts to tokenize it
     public static List<IndexDocument> tokenization(Map<String, String> pageTexts) {
-        List<IndexDocument> tokenedUrls = new ArrayList<>();
-
+        //declaring the output variable
+        List<IndexDocument> tokenedUrls = new ArrayList<IndexDocument>() {};
+        //looping over each url and its texts
         for (Map.Entry<String, String> entry : pageTexts.entrySet()) {
+            //getting the url name and the text in variables
             String key = entry.getKey();
             String value = entry.getValue();
+            //storing the tokenized text in a list after using the tokenization function on the text
             List<String> TokensList = Tokenize(value);
+            //adding the (url and tokenized-list) to the output variable
             tokenedUrls.add(new IndexDocument(key, TokensList));
         }
-
         return tokenedUrls;
     }
 
-    // Tokenizer helper method
     public static List<String> Tokenize(String text) {
+        //declaring a list of tokens for the output
         List<String> tokens = new ArrayList<>();
 
+        //if the list is empty return an empty list
         if (text == null || text.isEmpty()) return tokens;
 
-        String noPunctuation = text.replaceAll("\\p{Punct}", " ");
-        String[] words = noPunctuation.split("\\s+");
+        //removing all punctuation from the text and replacing them with space
+        String noPunctiuation = text.replaceAll("\\p{Punct}", " ");
 
+        //adding each word in a list splited by spaces
+        String[] words = noPunctiuation.split("\\s+");
+
+        //looping over the list of words to change each char to lowercase
         for (String word : words) {
             String trimmed = word.trim().toLowerCase();
             if (!trimmed.isEmpty()) {
+
+                //adding the word after tokenization to the output variable
                 tokens.add(trimmed);
             }
         }
-
         return tokens;
     }
 
-    // Print tokenized content for testing
+    //function to test the tokenization output (for testing)
     public static void printTokens(Map<String, List<String>> tokenizedUrls) {
+
         for (Map.Entry<String, List<String>> entry : tokenizedUrls.entrySet()) {
             String key = entry.getKey();
             List<String> value = entry.getValue();

@@ -38,7 +38,6 @@ public class QueryProcessor {
         
         // Rank docs by score and get top n docs
         return documentScores.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0.0) // to avoid taking ones that have score zero
                 .sorted(Map.Entry.<IndexDocument, Double>comparingByValue().reversed()) //rank
                 .limit(4) //get top n
                 .map(Map.Entry::getKey)

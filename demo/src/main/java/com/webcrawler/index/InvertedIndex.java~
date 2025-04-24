@@ -1,7 +1,5 @@
 package com.webcrawler.index;
 
-import com.webcrawler.crawler.WebCrawler;
-
 import java.util.*;
 
 public class InvertedIndex {
@@ -45,8 +43,7 @@ public class InvertedIndex {
 
     public int getDocumentFrequency(String term) {
         int count = 0;
-        List<String> tokenizeTerm = WebCrawler.Tokenize(term);
-        Posting current = index.get(tokenizeTerm.get(0));
+        Posting current = index.get(term);
         while (current != null) {
             count++;
             current = current.next;
