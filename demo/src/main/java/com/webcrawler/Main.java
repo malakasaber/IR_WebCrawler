@@ -6,6 +6,7 @@ import com.webcrawler.index.InvertedIndex;
 import com.webcrawler.similarity.QueryProcessor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -35,7 +36,7 @@ public class Main {
         String userQuery = scanner.nextLine();
 
         // Step 5: Process query and get ranked results
-        List<IndexDocument> topResults = processor.processQuery(userQuery);
+        Map<IndexDocument , Double> topResults = processor.processQuery(userQuery);
 
         // Step 6: Display top documents
         System.out.println("\nTop matching documents:");
@@ -43,10 +44,10 @@ public class Main {
             System.out.println("No results found.");
         } else {
             int rank = 1;
-            for (IndexDocument doc : topResults) {
-                System.out.println(rank + ". " + doc.getUrl());
-                rank++;
-            }
+            topResults.forEach((indexDocument, score) -> {
+                System.out.println("Document: " + indexDocument.getUrl() + ", Score: " + score);
+            });
+
         }
     }
 }

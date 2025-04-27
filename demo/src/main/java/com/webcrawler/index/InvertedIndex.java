@@ -6,47 +6,57 @@ import java.util.*;
 
 public class InvertedIndex {
     private final Map<String, Posting> index = new HashMap<>();
-    private final Map<Integer, IndexDocument> documentMap = new HashMap<>(); // docId -> Document
+    private final Map<Integer, IndexDocument> documentMap = new HashMap<>();
     private static int docIdCounter = 0;
-
-    public void addDocument(IndexDocument doc) {
+    private static final Set<String> STOP_WORDS = Set.of(
+            "the", "to", "be", "for", "from", "in",
+            "a", "into", "by", "or", "and", "that"
+    );
+    public void addDocument(IndexDocument document) {
         int docId = docIdCounter++;
-        documentMap.put(docId, doc);
+        documentMap.put(docId, document);
 
-        Map<String, Integer> termFreq = new HashMap<>();
-        for (String term : doc.getTokens()) {
-            termFreq.put(term, termFreq.getOrDefault(term, 0) + 1);
+        Map<String, Integer> termFrequencies = new HashMap<>();
+        for (String token : document.getTokens()) {
+            String stemmed = stemWord(token);
+            if (!isStopWord(stemmed)) {
+                termFrequencies.put(stemmed, termFrequencies.getOrDefault(stemmed, 0) + 1);
+            }
         }
 
-        for (Map.Entry<String, Integer> entry : termFreq.entrySet()) {
+        for (Map.Entry<String, Integer> entry : termFrequencies.entrySet()) {
             String term = entry.getKey();
-            int freq = entry.getValue();
+            int frequency = entry.getValue();
 
-            Posting newPosting = new Posting(docId, freq);
-            newPosting.next = index.get(term);
-            index.put(term, newPosting);
+            Posting posting = new Posting(docId, frequency);
+            posting.next = index.get(term);
+            index.put(term, posting);
         }
 
-        doc.setTermFrequencies(termFreq);
+        document.setTermFrequencies(termFrequencies);
     }
 
     public List<IndexDocument> getDocuments(String term) {
-        List<IndexDocument> docs = new ArrayList<>();
+        List<IndexDocument> documents = new ArrayList<>();
         Posting current = index.get(term);
+
         while (current != null) {
-            IndexDocument doc = documentMap.get(current.docId);
-            if (doc != null) {
-                docs.add(doc);
+            IndexDocument document = documentMap.get(current.docId);
+            if (document != null) {
+                documents.add(document);
             }
             current = current.next;
         }
-        return docs;
+
+        return documents;
     }
 
     public int getDocumentFrequency(String term) {
+        List<String> tokenized = WebCrawler.Tokenize(term);
+        if (tokenized.isEmpty()) return 0;
+
         int count = 0;
-        List<String> tokenizeTerm = WebCrawler.Tokenize(term);
-        Posting current = index.get(tokenizeTerm.get(0));
+        Posting current = index.get(tokenized.get(0));
         while (current != null) {
             count++;
             current = current.next;
@@ -61,4 +71,17 @@ public class InvertedIndex {
     public List<IndexDocument> getAllDocuments() {
         return new ArrayList<>(documentMap.values());
     }
+
+    private static boolean isStopWord(String word) {
+        return word.length() < 2 || STOP_WORDS.contains(word);
+    }
+
+    public static String stemWord(String word) {
+        Stemmer stemmer = new Stemmer();
+        stemmer.addString(word);
+        stemmer.stem();
+        return stemmer.toString();
+    }
+
+
 }

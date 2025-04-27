@@ -1,6 +1,7 @@
 package com.webcrawler.crawler;
 
 import com.webcrawler.index.IndexDocument;
+import com.webcrawler.index.InvertedIndex;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -113,7 +114,7 @@ public class WebCrawler {
         for (String word : words) {
             String trimmed = word.trim().toLowerCase();
             if (!trimmed.isEmpty()) {
-                tokens.add(trimmed);
+                tokens.add(InvertedIndex.stemWord( trimmed));
             }
         }
 

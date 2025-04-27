@@ -18,30 +18,33 @@ public class QueryProcessor {
         this.cosineSimilarity = new CosineSimilarity();
     }
 
-    public List<IndexDocument> processQuery(String query) {
-        // tokenize
-        List<String> queryTerms = WebCrawler.Tokenize(query); 
-        
-        // convert to array for TF-IDF calculation
+    public Map<IndexDocument, Double> processQuery(String query) {
+        // Tokenize
+        List<String> queryTerms = WebCrawler.Tokenize(query);
+
+        // Convert to array for TF-IDF calculation
         String[] termsArray = queryTerms.toArray(new String[0]);
         Map<String, Double> queryVector = tfidfCalculator.calculateQueryVector(termsArray);
 
-        // for docs scores
+        // For document scores
         Map<IndexDocument, Double> documentScores = new HashMap<>();
-        
-        // for every doc in crawled docs, get its cosine sim with the given query and add it to hashmap of scores
+
+        // For every doc in crawled docs, calculate cosine similarity and store
         for (IndexDocument doc : index.getAllDocuments()) {
             Map<String, Double> docVector = tfidfCalculator.calculateDocumentVector(doc);
             double score = cosineSimilarity.calculate(queryVector, docVector);
             documentScores.put(doc, score);
         }
-        
-        // Rank docs by score and get top n docs
-        return documentScores.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0.0) // to avoid taking ones that have score zero
-                .sorted(Map.Entry.<IndexDocument, Double>comparingByValue().reversed()) //rank
-                .limit(4) //get top n
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList()); //output
+
+        // Sort by score descending
+        return documentScores.entrySet()
+                .stream()
+                .sorted(Map.Entry.<IndexDocument, Double>comparingByValue(Comparator.reverseOrder()))
+                .collect(
+                        LinkedHashMap::new,
+                        (map, entry) -> map.put(entry.getKey(), entry.getValue()),
+                        LinkedHashMap::putAll
+                );
     }
+
 }
