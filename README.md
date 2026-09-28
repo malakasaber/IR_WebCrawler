@@ -18,6 +18,7 @@ A Java application that crawls Wikipedia pages, builds an inverted index, and ra
 - Maven 3.6.0 or higher
 
 ## <span style="font-size:28px">Project Structure</span>
+```
 ├── crawler/ # Web crawling components
 │ ├── WebCrawler.java
 │ └── CrawlerConfig.java
@@ -30,3 +31,4 @@ A Java application that crawls Wikipedia pages, builds an inverted index, and ra
 │ ├── CosineSimilarity.java
 │ └── QueryProcessor.java
 └── Main.java # Application entry point
+```
